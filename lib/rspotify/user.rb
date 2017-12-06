@@ -52,12 +52,14 @@ module RSpotify
     private_class_method :oauth_header
 
     def self.oauth_send(user_id, verb, path, *params)
-      RSpotify.send(:send_request, verb, path, *params)
-    rescue RestClient::Unauthorized => e
-      raise e if e.response !~ /access token expired/
-      refresh_token(user_id)
-      params[-1] = oauth_header(user_id)
-      RSpotify.send(:send_request, verb, path, *params)
+      begin
+        RSpotify.send(:send_request, verb, path, *params)
+      rescue RestClient::Forbidden => e
+        raise e if e.response !~ /requires user authentication/
+        refresh_token(user_id)
+        params[-1] = oauth_header(user_id)
+        RSpotify.send(:send_request, verb, path, *params)
+      end
     end
     private_class_method :oauth_header
 
