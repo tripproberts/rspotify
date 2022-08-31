@@ -51,6 +51,7 @@ module RSpotify
     rescue RestClient::BadRequest => e
       raise e if e.response !~ /Refresh token revoked/
     end
+    private_class_method :refresh_token
 
     def self.extract_custom_headers(params)
       headers_param = params.find{|x| x.is_a?(Hash) && x[:headers]}
@@ -70,6 +71,7 @@ module RSpotify
     def self.oauth_send(user_id, verb, path, *params)
       custom_headers = extract_custom_headers(params)
       headers = oauth_header(user_id).merge(custom_headers)
+      puts headers
       params << headers
       RSpotify.send(:send_request, verb, path, *params)
 
